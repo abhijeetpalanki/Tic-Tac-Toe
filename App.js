@@ -1,17 +1,36 @@
 import { StatusBar } from "expo-status-bar";
+import { useState } from "react";
 import { StyleSheet, Text, View, ImageBackground } from "react-native";
 import bg from "./assets/bg.png";
 
 export default function App() {
+  const [map, setMap] = useState([
+    ["o", "", ""], // 1st row
+    ["", "x", "x"], // 2nd row
+    ["o", "", ""], // 3rd row
+  ]);
+
   return (
     <View style={styles.container}>
       <ImageBackground source={bg} style={styles.bg} resizeMode="contain">
         <View style={styles.map}>
-          <View style={styles.circle} />
-          <View style={styles.cross}>
-            <View style={styles.crossLine} />
-            <View style={[styles.crossLine, styles.crossLineReversed]} />
-          </View>
+          {map.map((row) => (
+            <View style={styles.row}>
+              {row.map((cell) => (
+                <View style={styles.cell}>
+                  {cell === "o" && <View style={styles.circle} />}
+                  {cell === "x" && (
+                    <View style={styles.cross}>
+                      <View style={styles.crossLine} />
+                      <View
+                        style={[styles.crossLine, styles.crossLineReversed]}
+                      />
+                    </View>
+                  )}
+                </View>
+              ))}
+            </View>
+          ))}
         </View>
       </ImageBackground>
       <StatusBar style="auto" />
@@ -41,14 +60,19 @@ const styles = StyleSheet.create({
     width: "80%",
     aspectRatio: 1,
   },
+  row: {
+    flex: 1,
+    flexDirection: "row",
+  },
+  cell: {
+    width: 100,
+    height: 100,
+    flex: 1,
+    borderWidth: 1,
+    borderColor: "white",
+  },
   circle: {
-    position: "absolute",
-
-    left: 1 * 105,
-    top: 2 * 105,
-
-    width: 75,
-    height: 75,
+    flex: 1,
     borderRadius: 50,
     alignItems: "center",
     justifyContent: "center",
@@ -58,15 +82,13 @@ const styles = StyleSheet.create({
     borderColor: "white",
   },
   cross: {
-    position: "absolute",
-    width: 75,
-    height: 75,
+    flex: 1,
   },
   crossLine: {
     position: "absolute",
-    left: 32.5,
+    left: "48%",
     width: 10,
-    height: 70,
+    height: "100%",
     backgroundColor: "white",
     borderRadius: 5,
     transform: [
