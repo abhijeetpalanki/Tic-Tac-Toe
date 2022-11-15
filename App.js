@@ -1,14 +1,8 @@
 import { StatusBar } from "expo-status-bar";
 import { useState } from "react";
-import {
-  StyleSheet,
-  Text,
-  View,
-  ImageBackground,
-  Pressable,
-  Alert,
-} from "react-native";
+import { StyleSheet, Text, View, ImageBackground, Alert } from "react-native";
 import bg from "./assets/bg.png";
+import Cell from "./src/components/Cell";
 
 export default function App() {
   const [map, setMap] = useState([
@@ -121,7 +115,7 @@ export default function App() {
   };
 
   const gameWon = (player) => {
-    Alert.alert("Congratulations!!!", `Player ${player} won`, [
+    Alert.alert("Congratulations!!!", `Player ${player.toUpperCase()} won`, [
       {
         text: "Restart",
         onPress: resetGame,
@@ -141,25 +135,25 @@ export default function App() {
   return (
     <View style={styles.container}>
       <ImageBackground source={bg} style={styles.bg} resizeMode="contain">
+        <Text
+          style={{
+            fontSize: 24,
+            color: "white",
+            position: "absolute",
+            top: 50,
+          }}
+        >
+          Current Turn: {currentTurn.toUpperCase()}
+        </Text>
         <View style={styles.map}>
           {map.map((row, rowIndex) => (
             <View key={`row-${rowIndex}`} style={styles.row}>
               {row.map((cell, colIndex) => (
-                <Pressable
+                <Cell
                   key={`row-${rowIndex}-col-${colIndex}`}
+                  cell={cell}
                   onPress={() => onPress(rowIndex, colIndex)}
-                  style={styles.cell}
-                >
-                  {cell === "o" && <View style={styles.circle} />}
-                  {cell === "x" && (
-                    <View style={styles.cross}>
-                      <View style={styles.crossLine} />
-                      <View
-                        style={[styles.crossLine, styles.crossLineReversed]}
-                      />
-                    </View>
-                  )}
-                </Pressable>
+                />
               ))}
             </View>
           ))}
@@ -192,43 +186,5 @@ const styles = StyleSheet.create({
   row: {
     flex: 1,
     flexDirection: "row",
-  },
-  cell: {
-    width: 100,
-    height: 100,
-    flex: 1,
-  },
-  circle: {
-    flex: 1,
-    borderRadius: 50,
-    alignItems: "center",
-    justifyContent: "center",
-    margin: 10,
-
-    borderWidth: 10,
-    borderColor: "white",
-  },
-  cross: {
-    flex: 1,
-  },
-  crossLine: {
-    position: "absolute",
-    left: "48%",
-    width: 10,
-    height: "100%",
-    backgroundColor: "white",
-    borderRadius: 5,
-    transform: [
-      {
-        rotate: "45deg",
-      },
-    ],
-  },
-  crossLineReversed: {
-    transform: [
-      {
-        rotate: "-45deg",
-      },
-    ],
   },
 });
