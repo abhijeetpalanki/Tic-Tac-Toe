@@ -31,6 +31,111 @@ export default function App() {
     });
 
     setCurrentTurn(currentTurn === "x" ? "o" : "x");
+
+    const winner = getWinner();
+    if (winner) {
+      gameWon(winner);
+    } else {
+      checkTieState();
+    }
+  };
+
+  const getWinner = () => {
+    // check rows
+    for (let i = 0; i < 3; i++) {
+      const isRowXWinning = map[i].every((cell) => cell === "x");
+      const isRowOWinning = map[i].every((cell) => cell === "o");
+
+      if (isRowXWinning) {
+        return "x";
+      }
+      if (isRowOWinning) {
+        return "o";
+      }
+    }
+
+    // check columns
+    for (let col = 0; col < 3; col++) {
+      let isColumnXWinner = true;
+      let isColumnOWinner = true;
+
+      for (let row = 0; row < 3; row++) {
+        if (map[row][col] !== "x") {
+          isColumnXWinner = false;
+        }
+        if (map[row][col] !== "o") {
+          isColumnOWinner = false;
+        }
+      }
+
+      if (isColumnXWinner) {
+        return "x";
+      }
+      if (isColumnOWinner) {
+        return "o";
+      }
+    }
+
+    // check diagonals
+    let isDiagonalOWinning1 = true;
+    let isDiagonalXWinning1 = true;
+    let isDiagonalOWinning2 = true;
+    let isDiagonalXWinning2 = true;
+
+    for (let i = 0; i < 3; i++) {
+      // left diagonal
+      if (map[i][i] !== "o") {
+        isDiagonalOWinning1 = false;
+      }
+      if (map[i][i] !== "x") {
+        isDiagonalXWinning1 = false;
+      }
+
+      // right diagonal
+      if (map[i][2 - i] !== "o") {
+        isDiagonalOWinning2 = false;
+      }
+      if (map[i][2 - i] !== "x") {
+        isDiagonalXWinning2 = false;
+      }
+    }
+
+    // alert for left/right diagonal
+    if (isDiagonalOWinning1 || isDiagonalOWinning2) {
+      return "o";
+    }
+    if (isDiagonalXWinning1 || isDiagonalXWinning2) {
+      return "x";
+    }
+  };
+
+  const checkTieState = () => {
+    if (!map.some((row) => row.some((cell) => cell === ""))) {
+      Alert.alert("It's a Tie!", `Match Tied`, [
+        {
+          text: "Restart",
+          onPress: resetGame,
+        },
+      ]);
+    }
+  };
+
+  const gameWon = (player) => {
+    Alert.alert("Congratulations!!!", `Player ${player} won`, [
+      {
+        text: "Restart",
+        onPress: resetGame,
+      },
+    ]);
+  };
+
+  const resetGame = () => {
+    setMap([
+      ["", "", ""], // 1st row
+      ["", "", ""], // 2nd row
+      ["", "", ""], // 3rd row
+    ]);
+    setCurrentTurn("x");
   };
 
   return (
@@ -38,9 +143,10 @@ export default function App() {
       <ImageBackground source={bg} style={styles.bg} resizeMode="contain">
         <View style={styles.map}>
           {map.map((row, rowIndex) => (
-            <View style={styles.row}>
+            <View key={`row-${rowIndex}`} style={styles.row}>
               {row.map((cell, colIndex) => (
                 <Pressable
+                  key={`row-${rowIndex}-col-${colIndex}`}
                   onPress={() => onPress(rowIndex, colIndex)}
                   style={styles.cell}
                 >
@@ -67,7 +173,6 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: "#242d34",
@@ -81,8 +186,6 @@ const styles = StyleSheet.create({
     paddingTop: 20,
   },
   map: {
-    borderWidth: 1,
-    borderColor: "white",
     width: "80%",
     aspectRatio: 1,
   },
@@ -94,8 +197,6 @@ const styles = StyleSheet.create({
     width: 100,
     height: 100,
     flex: 1,
-    borderWidth: 1,
-    borderColor: "white",
   },
   circle: {
     flex: 1,
