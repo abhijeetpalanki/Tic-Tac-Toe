@@ -4,6 +4,11 @@ import { StyleSheet, Text, View, ImageBackground, Alert } from "react-native";
 import bg from "./assets/bg.png";
 import Cell from "./src/components/Cell";
 
+const copyArray = (original) => {
+  const copy = original.map((arr) => arr.slice());
+  return copy;
+};
+
 export default function App() {
   const [map, setMap] = useState([
     ["", "", ""], // 1st row
@@ -18,6 +23,15 @@ export default function App() {
     }
   }, [currentTurn]);
 
+  useEffect(() => {
+    const winner = getWinner(map);
+    if (winner) {
+      gameWon(winner);
+    } else {
+      checkTieState();
+    }
+  }, [map]);
+
   const onPress = (rowIndex, colIndex) => {
     if (map[rowIndex][colIndex] !== "") {
       Alert.alert("Position already occupied!");
@@ -31,20 +45,13 @@ export default function App() {
     });
 
     setCurrentTurn(currentTurn === "x" ? "o" : "x");
-
-    const winner = getWinner();
-    if (winner) {
-      gameWon(winner);
-    } else {
-      checkTieState();
-    }
   };
 
-  const getWinner = () => {
+  const getWinner = (winnerMap) => {
     // check rows
     for (let i = 0; i < 3; i++) {
-      const isRowXWinning = map[i].every((cell) => cell === "x");
-      const isRowOWinning = map[i].every((cell) => cell === "o");
+      const isRowXWinning = winnerMap[i].every((cell) => cell === "x");
+      const isRowOWinning = winnerMap[i].every((cell) => cell === "o");
 
       if (isRowXWinning) {
         return "x";
@@ -60,10 +67,10 @@ export default function App() {
       let isColumnOWinner = true;
 
       for (let row = 0; row < 3; row++) {
-        if (map[row][col] !== "x") {
+        if (winnerMap[row][col] !== "x") {
           isColumnXWinner = false;
         }
-        if (map[row][col] !== "o") {
+        if (winnerMap[row][col] !== "o") {
           isColumnOWinner = false;
         }
       }
@@ -84,18 +91,18 @@ export default function App() {
 
     for (let i = 0; i < 3; i++) {
       // left diagonal
-      if (map[i][i] !== "o") {
+      if (winnerMap[i][i] !== "o") {
         isDiagonalOWinning1 = false;
       }
-      if (map[i][i] !== "x") {
+      if (winnerMap[i][i] !== "x") {
         isDiagonalXWinning1 = false;
       }
 
       // right diagonal
-      if (map[i][2 - i] !== "o") {
+      if (winnerMap[i][2 - i] !== "o") {
         isDiagonalOWinning2 = false;
       }
-      if (map[i][2 - i] !== "x") {
+      if (winnerMap[i][2 - i] !== "x") {
         isDiagonalXWinning2 = false;
       }
     }
@@ -149,10 +156,41 @@ export default function App() {
       });
     });
 
-    // choose the best option
-    const chosenOption =
-      possiblePositions[Math.floor(Math.random() * possiblePositions.length)];
+    let chosenOption;
 
+    // attack
+    possiblePositions.forEach((possiblePosition) => {
+      const mapCopy = copyArray(map);
+      mapCopy[possiblePosition.row][possiblePosition.col] = "o";
+
+      const winner = getWinner(mapCopy);
+      if (winner === "o") {
+        // defend that position
+        chosenOption = possiblePosition;
+      }
+    });
+
+    // defend - check if the opponent WINS if he/she takes one of the possible postions
+    if (!chosenOption) {
+      possiblePositions.forEach((possiblePosition) => {
+        const mapCopy = copyArray(map);
+        mapCopy[possiblePosition.row][possiblePosition.col] = "x";
+
+        const winner = getWinner(mapCopy);
+        if (winner === "x") {
+          // defend that position
+          chosenOption = possiblePosition;
+        }
+      });
+    }
+
+    // choose random position
+    if (!chosenOption) {
+      chosenOption =
+        possiblePositions[Math.floor(Math.random() * possiblePositions.length)];
+    }
+
+    // display x or o when pressing
     if (chosenOption) {
       onPress(chosenOption.row, chosenOption.col);
     }
