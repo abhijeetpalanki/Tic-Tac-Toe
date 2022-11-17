@@ -1,5 +1,5 @@
 import { StatusBar } from "expo-status-bar";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { StyleSheet, Text, View, ImageBackground, Alert } from "react-native";
 import bg from "./assets/bg.png";
 import Cell from "./src/components/Cell";
@@ -11,6 +11,12 @@ export default function App() {
     ["", "", ""], // 3rd row
   ]);
   const [currentTurn, setCurrentTurn] = useState("x");
+
+  useEffect(() => {
+    if (currentTurn === "o") {
+      botTurn();
+    }
+  }, [currentTurn]);
 
   const onPress = (rowIndex, colIndex) => {
     if (map[rowIndex][colIndex] !== "") {
@@ -130,6 +136,26 @@ export default function App() {
       ["", "", ""], // 3rd row
     ]);
     setCurrentTurn("x");
+  };
+
+  const botTurn = () => {
+    // collect all possible options
+    const possiblePositions = [];
+    map.forEach((row, rowIndex) => {
+      row.forEach((cell, colIndex) => {
+        if (cell === "") {
+          possiblePositions.push({ row: rowIndex, col: colIndex });
+        }
+      });
+    });
+
+    // choose the best option
+    const chosenOption =
+      possiblePositions[Math.floor(Math.random() * possiblePositions.length)];
+
+    if (chosenOption) {
+      onPress(chosenOption.row, chosenOption.col);
+    }
   };
 
   return (
