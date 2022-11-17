@@ -16,12 +16,13 @@ export default function App() {
     ["", "", ""], // 3rd row
   ]);
   const [currentTurn, setCurrentTurn] = useState("x");
+  const [gameMode, setGameMode] = useState("BOT_MEDIUM"); // LOCAL, BOT_EASY, BOT_MEDIUM
 
   useEffect(() => {
-    if (currentTurn === "o") {
+    if (currentTurn === "o" && gameMode !== "LOCAL") {
       botTurn();
     }
-  }, [currentTurn]);
+  }, [currentTurn, gameMode]);
 
   useEffect(() => {
     const winner = getWinner(map);
@@ -157,31 +158,32 @@ export default function App() {
     });
 
     let chosenOption;
-
-    // attack
-    possiblePositions.forEach((possiblePosition) => {
-      const mapCopy = copyArray(map);
-      mapCopy[possiblePosition.row][possiblePosition.col] = "o";
-
-      const winner = getWinner(mapCopy);
-      if (winner === "o") {
-        // defend that position
-        chosenOption = possiblePosition;
-      }
-    });
-
-    // defend - check if the opponent WINS if he/she takes one of the possible postions
-    if (!chosenOption) {
+    if (gameMode === "BOT_MEDIUM") {
+      // attack
       possiblePositions.forEach((possiblePosition) => {
         const mapCopy = copyArray(map);
-        mapCopy[possiblePosition.row][possiblePosition.col] = "x";
+        mapCopy[possiblePosition.row][possiblePosition.col] = "o";
 
         const winner = getWinner(mapCopy);
-        if (winner === "x") {
+        if (winner === "o") {
           // defend that position
           chosenOption = possiblePosition;
         }
       });
+
+      // defend - check if the opponent WINS if he/she takes one of the possible postions
+      if (!chosenOption) {
+        possiblePositions.forEach((possiblePosition) => {
+          const mapCopy = copyArray(map);
+          mapCopy[possiblePosition.row][possiblePosition.col] = "x";
+
+          const winner = getWinner(mapCopy);
+          if (winner === "x") {
+            // defend that position
+            chosenOption = possiblePosition;
+          }
+        });
+      }
     }
 
     // choose random position
@@ -222,6 +224,43 @@ export default function App() {
             </View>
           ))}
         </View>
+
+        <View style={styles.buttons}>
+          <Text
+            onPress={() => setGameMode("LOCAL")}
+            style={[
+              styles.button,
+              { backgroundColor: gameMode === "LOCAL" ? "#4f5686" : "#191f24" },
+            ]}
+          >
+            Local
+          </Text>
+          <Text
+            onPress={() => setGameMode("BOT_EASY")}
+            style={[
+              styles.button,
+              {
+                backgroundColor:
+                  gameMode === "BOT_EASY" ? "#4f5686" : "#191f24",
+              },
+            ]}
+          >
+            Easy Bot
+          </Text>
+          <Text
+            onPress={() => setGameMode("BOT_MEDIUM")}
+            style={[
+              styles.button,
+              ,
+              {
+                backgroundColor:
+                  gameMode === "BOT_MEDIUM" ? "#4f5686" : "#191f24",
+              },
+            ]}
+          >
+            Medium Bot
+          </Text>
+        </View>
       </ImageBackground>
       <StatusBar style="auto" />
     </View>
@@ -250,5 +289,18 @@ const styles = StyleSheet.create({
   row: {
     flex: 1,
     flexDirection: "row",
+  },
+  buttons: {
+    position: "absolute",
+    bottom: 50,
+    flexDirection: "row",
+  },
+  button: {
+    color: "white",
+    margin: 10,
+    fontSize: 16,
+    backgroundColor: "#191f24",
+    padding: 10,
+    paddingHorizontal: 15,
   },
 });
